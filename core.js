@@ -5,6 +5,11 @@
   var WD = { Mon: 'Mo', Tue: 'Tu', Wed: 'We', Thu: 'Th', Fri: 'Fr', Sat: 'Sa', Sun: 'Su' };
   var CAMPUS = { lat: 43.07529, lng: -89.39907 }; // Library Mall (OSM)
 
+  // Today's date in Madison as YYYY-MM-DD (compares as a string with {until:} dates)
+  function madisonDate(date) {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Chicago', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date || new Date());
+  }
+
   // Weekday + minutes since midnight in Madison
   function madisonNow(date) {
     var f = new Intl.DateTimeFormat('en-US', { timeZone: 'America/Chicago', weekday: 'short', hour: 'numeric', minute: 'numeric', hourCycle: 'h23' });
@@ -65,7 +70,7 @@
     return score;
   }
 
-  var api = { DAYS: DAYS, CAMPUS: CAMPUS, madisonNow: madisonNow, status: status, alwaysOpen: alwaysOpen,
+  var api = { DAYS: DAYS, CAMPUS: CAMPUS, madisonNow: madisonNow, madisonDate: madisonDate, status: status, alwaysOpen: alwaysOpen,
     miles: miles, walkMinutes: walkMinutes, matchScore: matchScore, fold: fold };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.EssCore = api;

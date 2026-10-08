@@ -276,6 +276,7 @@
   function secHtml(p, key, title, list, hl) {
     var s = p.sec && p.sec[key];
     var items = s ? (s[lang] && s[lang].length ? s[lang] : s.en) : null;
+    if (items && s.exp) { var today = C.madisonDate(); items = items.filter(function (x, i) { return !s.exp[i] || s.exp[i] >= today; }); }
     if (!items || !items.length) return '';
     var body = list ? '<ul>' + items.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>'
       : items.map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('');
