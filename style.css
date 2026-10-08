@@ -207,7 +207,7 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
   .switcher { display: block; position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 1200; border: 0; border-radius: 999px;
     background: var(--ink); color: var(--paper); font-weight: 700; padding: 10px 22px; box-shadow: 0 2px 10px rgba(0, 0, 0, .3); }
   .page-view .switcher { display: none; }
-  .scroller { padding-bottom: 64px; }
+  .scroller { padding-bottom: 128px; }
   .page { padding: 14px 16px 48px; }
   .pg-head h1 { font-size: 27px; }
   .pg-sum { font-size: 16.5px; }

@@ -215,7 +215,8 @@
   function tileUrl() { return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'; }
   function initMap() {
     if (!window.L || map) return;
-    map = L.map('map', { zoomControl: true, attributionControl: true }).setView([C.CAMPUS.lat - 0.002, C.CAMPUS.lng - 0.004], 14);
+    map = L.map('map', { zoomControl: true, attributionControl: false }).setView([C.CAMPUS.lat - 0.002, C.CAMPUS.lng - 0.004], 14);
+    L.control.attribution({ position: 'bottomleft' }).addTo(map); // bottom right belongs to the feedback pill
     tileLayer = L.tileLayer(tileUrl(), { maxZoom: 19, maxNativeZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(map);
     D.places.forEach(function (p) {
       if (p.lat == null) return;
