@@ -36,7 +36,7 @@
       no_map: 'No map position', m: '{m} m', theme: 'Light or dark', not_found: 'That place is not in the guide.',
       tab_map: 'Map', tab_guide: 'Full guide', jump: 'Jump to a section', map_page: 'Map and bus stops',
       no_stops: 'No Madison Metro stop within 1.5 km (about a mile).',
-      tab_faq: 'Questions', related_q: 'Common questions about this place', faq_places: 'Where to go', faq_hit: 'Question'
+      tab_faq: 'Questions', related_q: 'Common questions about this place', faq_places: 'Where to go', faq_hit: 'Related common questions'
     },
     zh: {
       search_ph: '搜索：药店、亚洲超市、打印……', all: '全部', open_now: '营业中',
@@ -58,7 +58,7 @@
       no_map: '没有地图位置', m: '{m} 米', theme: '浅色或深色', not_found: '指南里没有这个地方。',
       tab_map: '地图', tab_guide: '指南全文', jump: '跳到某一类', map_page: '地图和公交站',
       no_stops: '1.5 公里内没有 Madison Metro 公交站。',
-      tab_faq: '常见问题', related_q: '和这里有关的常见问题', faq_places: '去这些地方', faq_hit: '常见问题'
+      tab_faq: '常见问题', related_q: '和这里有关的常见问题', faq_places: '去这些地方', faq_hit: '相关常见问题'
     }
   };
   function t(k, v) {
@@ -145,11 +145,26 @@
   }
 
   // Filtering
+  // Search: wording-aware relevance over every entry's text (ask.js), plus a bonus when the name itself matches
+  var AIX = null, qHits = [];
+  function searchScores(q) {
+    if (!AIX) AIX = EssAsk.build(D);
+    var ps = {};
+    qHits = [];
+    EssAsk.retrieve(AIX, q, 80, 0.12).forEach(function (r) { if (r.type === 'p') ps[r.id] = r.score; else qHits.push(r); });
+    return ps;
+  }
   function visible() {
     var now = C.madisonNow(), out = [];
+    var ps = state.q.trim() ? searchScores(state.q) : null;
+    if (!ps) qHits = [];
     D.places.forEach(function (p) {
       if (state.cat !== 'all' && p.cat !== state.cat) return;
-      var sc = C.matchScore(p, state.q, catName(p.cat, 'en') + ' ' + catName(p.cat, 'zh'));
+      var sc = 1;
+      if (ps) {
+        var ms = C.matchScore(p, state.q, '');  // no category labels: "寄件" in a category name matched every bank
+        sc = (ps[p.id] || 0) + (ms ? 4 + 2 * ms : 0);
+      }
       if (!sc) return;
       var st = C.status(p.h, now);
       if (state.open && !(st && st.open)) return;
@@ -212,14 +227,16 @@
       }
       html += rowHtml(r);
     });
-    if (state.q.trim()) {
-      var hits = FAQ.map(function (q) { return { q: q, s: faqScore(q, state.q) }; }).filter(function (x) { return x.s; })
-        .sort(function (a, b) { return b.s - a.s; }).slice(0, 2);
-      html = hits.map(function (x) {
-        return '<li class="fq-hit"><a href="#faq=' + encodeURIComponent(x.q.id) + '"><span class="fq-k">' + esc(t('faq_hit')) + '</span>' + esc(lo(x.q.q)) + '</a></li>';
-      }).join('') + html;
+    // Related common questions go under the places
+    var qs = qHits.slice(0, 3).map(function (r) { return FAQ.filter(function (q) { return q.id === r.id; })[0]; }).filter(Boolean);
+    if (qs.length) {
+      html += '<li class="fq-below">' + esc(t('faq_hit')) + '</li>' + qs.map(function (q) {
+        var first = faqItems(q)[0] || '';
+        return '<li class="fq-hit"><a href="#faq=' + encodeURIComponent(q.id) + '"><b>' + esc(lo(q.q)) + '</b><span>' +
+          esc(first.length > 110 ? first.slice(0, 108) + '…' : first) + '</span></a></li>';
+      }).join('');
     }
-    if (!rows.length && html.indexOf('fq-hit') < 0) html = '<li class="empty"><p>' + esc(t('none')) + '</p><button type="button" class="chip" id="clear">' + esc(t('clear')) + '</button></li>';
+    if (!rows.length && !qs.length) html = '<li class="empty"><p>' + esc(t('none')) + '</p><button type="button" class="chip" id="clear">' + esc(t('clear')) + '</button></li>';
     $('list').innerHTML = html;
     $('count').textContent = rows.length === 1 ? t('count1') : t('count', { n: rows.length });
     var clr = $('clear');
@@ -433,11 +450,6 @@
     var items = q.a[lang] && q.a[lang].length ? q.a[lang] : q.a.en;
     if (q.a.exp) { var today = C.madisonDate(); items = items.filter(function (x, i) { return !q.a.exp[i] || q.a.exp[i] >= today; }); }
     return items;
-  }
-  function faqScore(q, text) {
-    var words = C.fold(text).split(/\s+/).filter(Boolean), hay = C.fold(q.q.en + ' ' + q.q.zh + ' ' + (q.kw || []).join(' '));
-    for (var i = 0; i < words.length; i++) { if (hay.indexOf(words[i]) < 0) return 0; }
-    return words.length;
   }
   function relQ(p) {
     var qs = FAQ.filter(function (q) { return q.places.indexOf(p.id) >= 0; });

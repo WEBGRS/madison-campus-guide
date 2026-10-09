@@ -185,8 +185,11 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
 .fq-src ol { margin: 6px 0 0; padding-left: 20px; }
 .fq-src li { margin-bottom: 3px; overflow-wrap: anywhere; }
 .fq-src .host { color: var(--graphite); font-size: 12px; }
-.fq-hit a { display: block; padding: 11px 16px; border-bottom: 1px solid var(--line); background: var(--smoke); text-decoration: none; font-weight: 600; line-height: 1.35; }
-.fq-hit .fq-k { display: block; font-weight: 700; margin-bottom: 2px; }
+.fq-below { position: sticky; top: 0; z-index: 2; padding: 14px 16px 6px; background: var(--paper); font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--line); }
+.fq-hit a { display: grid; gap: 3px; padding: 11px 16px; border-bottom: 1px solid var(--line); text-decoration: none; line-height: 1.4; }
+.fq-hit a:hover { background: var(--smoke); }
+.fq-hit b { font-weight: 600; }
+.fq-hit span { font-size: 13px; color: var(--graphite); }
 .relq ul { padding-left: 20px; }
 
 /* Full guide */
