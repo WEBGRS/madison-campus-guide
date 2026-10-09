@@ -35,7 +35,8 @@
       days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], noon: 'noon', midnight: 'midnight',
       no_map: 'No map position', m: '{m} m', theme: 'Light or dark', not_found: 'That place is not in the guide.',
       tab_map: 'Map', tab_guide: 'Full guide', jump: 'Jump to a section', map_page: 'Map and bus stops',
-      no_stops: 'No Madison Metro stop within 1.5 km (about a mile).'
+      no_stops: 'No Madison Metro stop within 1.5 km (about a mile).',
+      tab_faq: 'Questions', related_q: 'Common questions about this place', faq_places: 'Where to go', faq_hit: 'Question'
     },
     zh: {
       search_ph: '搜索：药店、亚洲超市、打印……', all: '全部', open_now: '营业中',
@@ -56,7 +57,8 @@
       days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'], noon: '12:00', midnight: '24:00',
       no_map: '没有地图位置', m: '{m} 米', theme: '浅色或深色', not_found: '指南里没有这个地方。',
       tab_map: '地图', tab_guide: '指南全文', jump: '跳到某一类', map_page: '地图和公交站',
-      no_stops: '1.5 公里内没有 Madison Metro 公交站。'
+      no_stops: '1.5 公里内没有 Madison Metro 公交站。',
+      tab_faq: '常见问题', related_q: '和这里有关的常见问题', faq_places: '去这些地方', faq_hit: '常见问题'
     }
   };
   function t(k, v) {
@@ -210,7 +212,14 @@
       }
       html += rowHtml(r);
     });
-    if (!rows.length) html = '<li class="empty"><p>' + esc(t('none')) + '</p><button type="button" class="chip" id="clear">' + esc(t('clear')) + '</button></li>';
+    if (state.q.trim()) {
+      var hits = FAQ.map(function (q) { return { q: q, s: faqScore(q, state.q) }; }).filter(function (x) { return x.s; })
+        .sort(function (a, b) { return b.s - a.s; }).slice(0, 2);
+      html = hits.map(function (x) {
+        return '<li class="fq-hit"><a href="#faq=' + encodeURIComponent(x.q.id) + '"><span class="fq-k">' + esc(t('faq_hit')) + '</span>' + esc(lo(x.q.q)) + '</a></li>';
+      }).join('') + html;
+    }
+    if (!rows.length && html.indexOf('fq-hit') < 0) html = '<li class="empty"><p>' + esc(t('none')) + '</p><button type="button" class="chip" id="clear">' + esc(t('clear')) + '</button></li>';
     $('list').innerHTML = html;
     $('count').textContent = rows.length === 1 ? t('count1') : t('count', { n: rows.length });
     var clr = $('clear');
@@ -366,6 +375,7 @@
       '<div class="pg-grid"><aside class="pg-side"><div class="facts">' + facts + '</div>' +
       (p.lat != null ? '<div class="minimap" id="minimap" aria-label="Map"></div>' : '') + '</aside>' +
       '<div class="pg-body">' + allSecs(p, 'h2') +
+      relQ(p) +
       (near ? '<section class="sec near"><h2>' + esc(t('near_same')) + '</h2><ul class="nearl">' + near + '</ul></section>' : '') +
       '<section class="sec srcs"><h2>' + esc(t('sources')) + '</h2><ol>' + srcs + '</ol><p class="chk">' + esc(t('checked', { d: fmtDate(p.chk) })) + '</p></section>' +
       '</div></div>';
@@ -417,7 +427,62 @@
     var el = $(a.getAttribute('data-go'));
     if (el) el.scrollIntoView();
   });
+  // Common questions
+  var FAQ = D.faq || [];
+  function faqItems(q) {
+    var items = q.a[lang] && q.a[lang].length ? q.a[lang] : q.a.en;
+    if (q.a.exp) { var today = C.madisonDate(); items = items.filter(function (x, i) { return !q.a.exp[i] || q.a.exp[i] >= today; }); }
+    return items;
+  }
+  function faqScore(q, text) {
+    var words = C.fold(text).split(/\s+/).filter(Boolean), hay = C.fold(q.q.en + ' ' + q.q.zh + ' ' + (q.kw || []).join(' '));
+    for (var i = 0; i < words.length; i++) { if (hay.indexOf(words[i]) < 0) return 0; }
+    return words.length;
+  }
+  function relQ(p) {
+    var qs = FAQ.filter(function (q) { return q.places.indexOf(p.id) >= 0; });
+    if (!qs.length) return '';
+    return '<section class="sec relq"><h2>' + esc(t('related_q')) + '</h2><ul>' + qs.map(function (q) {
+      return '<li><a href="#faq=' + encodeURIComponent(q.id) + '">' + esc(lo(q.q)) + '</a></li>';
+    }).join('') + '</ul></section>';
+  }
+  var faqLang = null;
+  function renderFaq() {
+    if (faqLang === lang) return;
+    faqLang = lang;
+    var html = '<h1 class="fq-h1">' + esc(t('tab_faq')) + '</h1>';
+    D.cats.forEach(function (c) {
+      var qs = FAQ.filter(function (q) { return q.topic === c.k; });
+      if (!qs.length) return;
+      html += '<section class="fq-cat"><h2>' + pin(c.k, 'sm') + '<span>' + esc(c[lang]) + '</span></h2>' + qs.map(function (q) {
+        var pls = q.places.map(function (id) {
+          var x = BY[id];
+          return x ? '<a class="fq-pl" href="#p=' + encodeURIComponent(id) + '">' + pin(x.cat, 'xs') + '<span>' + esc(lo(x.n)) + '</span></a>' : '';
+        }).join('');
+        return '<details class="fq" id="q-' + esc(q.id) + '"><summary>' + esc(lo(q.q)) + '</summary><div class="fq-a">' +
+          faqItems(q).map(function (x) { return '<p>' + esc(x) + '</p>'; }).join('') +
+          (pls ? '<div class="fq-pls"><span class="fq-k">' + esc(t('faq_places')) + '</span>' + pls + '</div>' : '') +
+          '<details class="fq-src"><summary>' + esc(t('sources')) + ' (' + q.src.length + ')</summary><ol>' + q.src.map(function (s) {
+            return '<li><a href="' + esc(s[1]) + '" target="_blank" rel="noopener">' + esc(s[0]) + '</a> <span class="host">' + esc(host(s[1])) + '</span></li>';
+          }).join('') + '</ol></details></div></details>';
+      }).join('') + '</section>';
+    });
+    $('faqpage').innerHTML = html;
+  }
+  function showFaq(id) {
+    if (!$('view-list').hidden) state.listScroll = $('scroller').scrollTop;
+    $('view-list').hidden = true;
+    $('view-page').hidden = true;
+    $('view-guide').hidden = true;
+    $('view-faq').hidden = false;
+    renderFaq();
+    document.title = t('tab_faq') + ' · Madison Essentials';
+    setTab('faq');
+    var d = id && $('q-' + id);
+    if (d) { d.open = true; d.scrollIntoView(); } else $('view-faq').scrollTop = 0;
+  }
   function showGuide() {
+    $('view-faq').hidden = true;
     if (!$('view-list').hidden) state.listScroll = $('scroller').scrollTop;
     $('view-list').hidden = true;
     $('view-page').hidden = true;
@@ -429,6 +494,8 @@
   function setTab(k) {
     $('tab-map').classList.toggle('active', k === 'map');
     $('tab-guide').classList.toggle('active', k === 'guide');
+    $('tab-faq').classList.toggle('active', k === 'faq');
+    $('tab-faq').setAttribute('aria-current', k === 'faq' ? 'page' : 'false');
     $('tab-map').setAttribute('aria-current', k === 'map' ? 'page' : 'false');
     $('tab-guide').setAttribute('aria-current', k === 'guide' ? 'page' : 'false');
   }
@@ -439,6 +506,7 @@
     if (!$('view-list').hidden) state.listScroll = $('scroller').scrollTop;
     $('view-list').hidden = true;
     $('view-guide').hidden = true;
+    $('view-faq').hidden = true;
     $('view-page').hidden = false;
     renderPage(id);
     $('view-page').scrollTop = 0;
@@ -448,6 +516,7 @@
   function showList() {
     $('view-page').hidden = true;
     $('view-guide').hidden = true;
+    $('view-faq').hidden = true;
     $('view-list').hidden = false;
     setTab('map');
     document.title = 'Madison Essentials';
@@ -464,6 +533,8 @@
     var m = /^#p=(.+)$/.exec(location.hash);
     if (m) { showPage(decodeURIComponent(m[1])); return; }
     if (location.hash === '#guide') { showGuide(); pageFromList = false; return; }
+    var fq = /^#faq(?:=(.+))?$/.exec(location.hash);
+    if (fq) { showFaq(fq[1] ? decodeURIComponent(fq[1]) : ''); pageFromList = false; return; }
     showList();
     pageFromList = false;
   }
@@ -480,9 +551,11 @@
     $('foot').textContent = t('foot', { d: fmtDate(D.checked) });
     $('tab-map').textContent = t('tab_map');
     $('tab-guide').textContent = t('tab_guide');
+    $('tab-faq').textContent = t('tab_faq');
     if (refit) fitVisible();
     if (!$('view-page').hidden) { var m = /^#p=(.+)$/.exec(location.hash); if (m) renderPage(decodeURIComponent(m[1])); }
     if (!$('view-guide').hidden) renderGuide();
+    if (!$('view-faq').hidden) renderFaq();
   }
 
   // Events

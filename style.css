@@ -164,6 +164,31 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
 .chk { font-size: 13.5px !important; color: var(--graphite); margin-top: 10px !important; }
 .pg-missing { font-size: 16px; }
 
+/* Common questions */
+.faq-view { display: block; overflow-y: auto; }
+.faq-page { max-width: 820px; margin: 0 auto; padding: 18px 28px 64px; }
+.fq-h1 { font-size: 30px; letter-spacing: -.02em; margin: 8px 0 10px; }
+.fq-cat h2 { display: flex; align-items: center; gap: 10px; font-size: 20px; margin: 26px 0 4px; padding-bottom: 8px; border-bottom: 2px solid var(--ink); }
+.fq { border-bottom: 1px solid var(--line); }
+.fq summary { list-style: none; cursor: pointer; padding: 13px 34px 13px 2px; font-weight: 600; font-size: 16.5px; line-height: 1.4; position: relative; }
+.fq summary::-webkit-details-marker { display: none; }
+.fq summary::after { content: "+"; position: absolute; right: 6px; top: 10px; font-size: 22px; font-weight: 400; }
+.fq[open] summary::after { content: "\2013"; }
+.fq-a { padding: 0 2px 16px; }
+.fq-a p { font-size: 15.5px; line-height: 1.65; margin: 0 0 8px; }
+.fq-pls { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 10px 0 6px; }
+.fq-k { font-size: 12.5px; font-weight: 700; margin-right: 4px; }
+.fq-pl { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px 4px 6px; font-size: 13.5px; text-decoration: none; }
+.fq-pl:hover { border-color: var(--ink); }
+.fq-src { font-size: 13px; margin: 8px 0 0; }
+.fq-src summary { cursor: pointer; color: var(--graphite); }
+.fq-src ol { margin: 6px 0 0; padding-left: 20px; }
+.fq-src li { margin-bottom: 3px; overflow-wrap: anywhere; }
+.fq-src .host { color: var(--graphite); font-size: 12px; }
+.fq-hit a { display: block; padding: 11px 16px; border-bottom: 1px solid var(--line); background: var(--smoke); text-decoration: none; font-weight: 600; line-height: 1.35; }
+.fq-hit .fq-k { display: block; font-weight: 700; margin-bottom: 2px; }
+.relq ul { padding-left: 20px; }
+
 /* Full guide */
 .guide-view { display: flex; }
 .toc { width: 280px; flex: none; overflow-y: auto; border-right: 1px solid var(--line); padding: 14px 16px 40px; font-size: 13.5px; }
@@ -219,10 +244,22 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
   .pg-side, .pg-body { grid-column: 1; grid-row: auto; position: static; }
   .tab { padding: 0 8px; }
   .toc { display: none; }
+  .faq-page { padding: 12px 16px 56px; }
+  .fq-h1 { font-size: 25px; }
   .guide { padding: 6px 16px 48px; }
   .g-jump { display: block; width: 100%; max-width: none; margin: 10px 0 0; font-size: 15px; padding: 8px 30px 8px 12px; }
   .g-cat-h { font-size: 22px; }
   .g-place h3 { font-size: 19px; }
+}
+@media (max-width: 400px) {
+  .top { padding: 0 10px; gap: 6px; }
+  .tab { padding: 0 6px; font-size: 14px; }
+  .top-right { gap: 6px; }
+  .lang { padding: 4px 9px; }
+}
+@media (max-width: 340px) {
+  .top { padding: 0 8px; gap: 4px; }
+  .tab { padding: 0 4px; font-size: 13px; }
 }
 @media (max-width: 420px) {
   .wordmark { font-size: 0; }
@@ -231,6 +268,6 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
 }
 @media print {
   body { display: block; overflow: visible; height: auto; }
-  .top, .toc, .g-jump, #view-list, #view-page { display: none !important; }
+  .top, .toc, .g-jump, #view-list, #view-page, #view-faq { display: none !important; }
   .guide-view, .guide { display: block; overflow: visible; padding: 0; }
 }

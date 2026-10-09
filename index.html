@@ -17,13 +17,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="style.css?v=8562da1fa7">
+<link rel="stylesheet" href="style.css?v=4fb8b0b24f">
 </head>
 <body>
 <header class="top">
   <a class="wordmark" href="#" id="home-link">Madison Essentials</a>
   <nav class="tabs" aria-label="Views">
     <a class="tab" href="#" id="tab-map"></a>
+    <a class="tab" href="#faq" id="tab-faq"></a>
     <a class="tab" href="#guide" id="tab-guide"></a>
   </nav>
   <div class="top-right">
@@ -61,16 +62,20 @@
   <article class="page" id="page"></article>
 </main>
 
+<main class="view faq-view" id="view-faq" hidden>
+  <div class="faq-page" id="faqpage"></div>
+</main>
+
 <main class="view guide-view" id="view-guide" hidden>
   <nav class="toc" id="toc" aria-label="Contents"></nav>
   <div class="guide" id="guide"></div>
 </main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="data/places.js?v=e8ffd06a97"></script>
+<script src="data/places.js?v=169a0a66db"></script>
 <script src="data/routes.js?v=2230e2a453" onerror="window.ROUTES={}"></script>
 <script src="core.js?v=22c1b0344d"></script>
-<script src="app.js?v=d277be3697"></script>
+<script src="app.js?v=5109e988fe"></script>
 <script src="feedback.js?v=f6ff8df4eb" data-site="guide" data-star="WEBGRS/madison-campus-guide" data-float-bottom-narrow="72" data-narrow-max="760" defer></script>
 </body>
 </html>

@@ -10,16 +10,16 @@ practical tips, and notes for international students. Built for new students.
 
 ## What's in it
 
-120 places:
+131 places:
 
 - Groceries: 21
+- Shopping & services: 20
 - Campus services: 16
 - Health: 16
 - Free time: 15
-- Shopping: 12
-- Banks & mail: 10
+- Banks, mail & utilities: 12
+- Getting around: 9
 - Study & tech: 8
-- Getting around: 8
 - Fitness: 7
 - IDs, safety & help: 7
 
@@ -33,7 +33,7 @@ contents.
 ## How the facts were checked
 
 Every address, phone number, opening time, price and eligibility rule in an entry is tied
-to a verbatim quote from the page it came from — 3,485 quotes in total, each matched
+to a verbatim quote from the page it came from — 3,671 quotes in total, each matched
 again against a saved copy of its source before publishing. Each place lists its sources
 and the date it was checked (last check: 2026-10-08). Hours and rules change, so confirm on
 the official site before you go.
