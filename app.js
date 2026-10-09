@@ -34,7 +34,8 @@
       me_wait: 'Finding your location…', me_fail: 'Location unavailable — showing distances from Library Mall.',
       days: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'], noon: 'noon', midnight: 'midnight',
       no_map: 'No map position', m: '{m} m', theme: 'Light or dark', not_found: 'That place is not in the guide.',
-      tab_map: 'Map', tab_guide: 'Full guide', jump: 'Jump to a section', map_page: 'Map and bus stops'
+      tab_map: 'Map', tab_guide: 'Full guide', jump: 'Jump to a section', map_page: 'Map and bus stops',
+      no_stops: 'No Madison Metro stop within 1.5 km (about a mile).'
     },
     zh: {
       search_ph: '搜索：药店、亚洲超市、打印……', all: '全部', open_now: '营业中',
@@ -54,7 +55,8 @@
       me_wait: '正在获取你的位置……', me_fail: '拿不到你的位置，改为从 Library Mall 算距离。',
       days: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'], noon: '12:00', midnight: '24:00',
       no_map: '没有地图位置', m: '{m} 米', theme: '浅色或深色', not_found: '指南里没有这个地方。',
-      tab_map: '地图', tab_guide: '指南全文', jump: '跳到某一类', map_page: '地图和公交站'
+      tab_map: '地图', tab_guide: '指南全文', jump: '跳到某一类', map_page: '地图和公交站',
+      no_stops: '1.5 公里内没有 Madison Metro 公交站。'
     }
   };
   function t(k, v) {
@@ -164,7 +166,13 @@
     D.cats.forEach(function (c) {
       html += '<button class="cat' + (state.cat === c.k ? ' on' : '') + '" data-cat="' + c.k + '" aria-pressed="' + (state.cat === c.k) + '">' + pin(c.k, 'xs') + '<span>' + esc(c[lang]) + '</span></button>';
     });
-    $('cats').innerHTML = html;
+    var box = $('cats'), left = box.scrollLeft;
+    box.innerHTML = html;
+    box.scrollLeft = left; // phones scroll the chip row sideways; keep the place
+    var on = box.querySelector('.cat.on');
+    if (on && box.scrollWidth > box.clientWidth && (on.offsetLeft < box.scrollLeft || on.offsetLeft + on.offsetWidth > box.scrollLeft + box.clientWidth)) {
+      box.scrollLeft = on.offsetLeft - 16;
+    }
   }
   function renderFilters() {
     $('q').placeholder = t('search_ph');
@@ -340,7 +348,7 @@
       facts += '<div class="fact"><div class="fk">' + esc(t('distance')) + '</div><div class="fv">' + esc(t('dist_line', { mi: fmtMi(mi), o: o[lang] })) +
         (wm <= 45 ? ' · ' + esc(t('walk', { m: wm })) : '') + '</div></div>';
     }
-    var st = stopsHtml(p);
+    var st = stopsHtml(p) || (p.lat != null ? esc(t('no_stops')) : '');
     if (st) facts += '<div class="fact"><div class="fk">' + esc(t('bus')) + '</div><div class="fv">' + st + '</div></div>';
 
     var near = nearbySame(p).map(function (x) {
