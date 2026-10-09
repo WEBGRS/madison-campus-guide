@@ -36,7 +36,21 @@
       no_map: 'No map position', m: '{m} m', theme: 'Light or dark', not_found: 'That place is not in the guide.',
       tab_map: 'Map', tab_guide: 'Full guide', jump: 'Jump to a section', map_page: 'Map and bus stops',
       no_stops: 'No Madison Metro stop within 1.5 km (about a mile).',
-      tab_faq: 'Questions', related_q: 'Common questions about this place', faq_places: 'Where to go', faq_hit: 'Related common questions'
+      tab_faq: 'Ask', related_q: 'Common questions about this place', faq_places: 'Where to go', faq_hit: 'Related common questions',
+      ask_title: 'Ask a question', ask_ph: 'e.g. Can I open a bank account without an SSN?', ask_btn: 'Ask', faq_list: 'Common questions',
+      ask_note: 'AI answers only from this guide\'s checked entries and can be wrong; follow the linked official pages. Questions are logged to improve the guide.',
+      ask_related: 'Related in this guide', ask_wait: 'Writing an answer…', ask_ai: 'AI answer',
+      ask_none: 'This guide has nothing on that yet. Try other words, or browse the common questions below.',
+      ask_quota: 'You have reached today\'s question limit. The related entries above still apply.',
+      ask_fail: 'The AI is not available right now. See the related entries above.',
+      ask_verify: 'The automatic browser check did not pass, so AI answers are off here. Reload the page, or allow this site in your blocker. The related entries above still work.',
+      ask_busy: 'AI answers are paused for today: the site has reached its daily limit. The related entries above still work.',
+      ask_off: 'AI answers are not available on this copy of the site. See the related entries above.',
+      ask_numcheck: 'Some numbers in this answer are not in the guide\'s entries. Check the official page before you rely on them.',
+      ask_list: 'Ask AI: “{q}”',
+      ask_left: 'Questions left today on this device: {n} of {max}.',
+      ask_low: 'Only {n} question(s) left today on this device.',
+      ask_out: 'This device has used today\'s {max} questions. They come back after midnight, Madison time. The related entries above still work.'
     },
     zh: {
       search_ph: '搜索：药店、亚洲超市、打印……', all: '全部', open_now: '营业中',
@@ -58,7 +72,21 @@
       no_map: '没有地图位置', m: '{m} 米', theme: '浅色或深色', not_found: '指南里没有这个地方。',
       tab_map: '地图', tab_guide: '指南全文', jump: '跳到某一类', map_page: '地图和公交站',
       no_stops: '1.5 公里内没有 Madison Metro 公交站。',
-      tab_faq: '常见问题', related_q: '和这里有关的常见问题', faq_places: '去这些地方', faq_hit: '相关常见问题'
+      tab_faq: '问答', related_q: '和这里有关的常见问题', faq_places: '去这些地方', faq_hit: '相关常见问题',
+      ask_title: '问一个问题', ask_ph: '比如：没有 SSN 能开银行账户吗？', ask_btn: '提问', faq_list: '常见问题',
+      ask_note: 'AI 只根据本站核过的资料回答，可能出错，以链接的官网为准。提问会被记录，用来补充本站内容。',
+      ask_related: '本站相关内容', ask_wait: '正在整理回答……', ask_ai: 'AI 回答',
+      ask_none: '本站暂时没有相关资料。换个说法试试，或看下面的常见问题。',
+      ask_quota: '今天的提问次数用完了。上面的相关内容仍然可以看。',
+      ask_fail: 'AI 暂时用不了，先看上面的相关内容。',
+      ask_verify: '浏览器自动验证没通过，这里暂时用不了 AI 回答。刷新页面，或在拦截插件里放行本站再试。上面的相关内容照样能看。',
+      ask_busy: '全站今天的 AI 回答次数已到上限，明天恢复。上面的相关内容照样能看。',
+      ask_off: '这个版本的网站没有接 AI 回答，先看上面的相关内容。',
+      ask_numcheck: '回答里有数字在本站资料中找不到，用之前请先看官网。',
+      ask_list: '问 AI：「{q}」',
+      ask_left: '这台设备今天还能问 {n} 次（每天 {max} 次）。',
+      ask_low: '注意：这台设备今天只剩 {n} 次提问了。',
+      ask_out: '这台设备今天的 {max} 次提问已经用完，麦迪逊时间零点后恢复。上面的相关内容照样能看。'
     }
   };
   function t(k, v) {
@@ -236,7 +264,11 @@
           esc(first.length > 110 ? first.slice(0, 108) + '…' : first) + '</span></a></li>';
       }).join('');
     }
-    if (!rows.length && !qs.length) html = '<li class="empty"><p>' + esc(t('none')) + '</p><button type="button" class="chip" id="clear">' + esc(t('clear')) + '</button></li>';
+    var qq = state.q.trim();
+    if (qq.length >= 4 && (/[?？吗呢么]|怎么|哪|如何|能不能|可以|how|where|what|can i|do i|is there/i.test(qq) || qq.split(/\s+/).length >= 4)) {
+      html += '<li class="ask-row"><a href="#faq" data-ask="1">' + esc(t('ask_list', { q: qq.length > 40 ? qq.slice(0, 39) + '…' : qq })) + '</a></li>';
+    }
+    if (!rows.length && !qs.length && html.indexOf('ask-row') < 0) html = '<li class="empty"><p>' + esc(t('none')) + '</p><button type="button" class="chip" id="clear">' + esc(t('clear')) + '</button></li>';
     $('list').innerHTML = html;
     $('count').textContent = rows.length === 1 ? t('count1') : t('count', { n: rows.length });
     var clr = $('clear');
@@ -462,7 +494,10 @@
   function renderFaq() {
     if (faqLang === lang) return;
     faqLang = lang;
-    var html = '<h1 class="fq-h1">' + esc(t('tab_faq')) + '</h1>';
+    var html = '<section class="ask"><h1 class="fq-h1">' + esc(t('ask_title')) + '</h1>' +
+      '<form class="ask-form" id="ask-form"><input id="ask-q" type="text" maxlength="300" autocomplete="off" aria-label="' + esc(t('ask_title')) + '" placeholder="' + esc(t('ask_ph')) + '">' +
+      '<button type="submit">' + esc(t('ask_btn')) + '</button></form><p class="ask-note">' + esc(t('ask_note')) + '</p><p class="ask-left" id="ask-left"></p><div id="ask-out" aria-live="polite"></div></section>' +
+      '<h2 class="fq-h2">' + esc(t('faq_list')) + '</h2>';
     D.cats.forEach(function (c) {
       var qs = FAQ.filter(function (q) { return q.topic === c.k; });
       if (!qs.length) return;
@@ -480,6 +515,109 @@
       }).join('') + '</section>';
     });
     $('faqpage').innerHTML = html;
+    $('ask-form').onsubmit = function (e) { e.preventDefault(); ask($('ask-q').value); };
+    showLeft(askLeft);
+    refreshLeft();
+  }
+
+  // Ask a question: related entries at once (local), then an AI answer built from them (Worker)
+  var CFG = window.ESS_CONFIG || {};
+  var G = CFG.api && window.WebgrsGuard ? WebgrsGuard.create({ api: CFG.api, sitekey: CFG.sitekey, site: 'guide' }) : null;
+  var askSeq = 0, askLeft = null, askMax = 10;
+  // A random id kept on this device; the API limits questions per device per day
+  function deviceId() {
+    var id = LS.get('dev', '');
+    if (!/^[A-Za-z0-9_-]{16,64}$/.test(id)) {
+      var b = new Uint8Array(16);
+      (window.crypto || window.msCrypto).getRandomValues(b);
+      id = btoa(String.fromCharCode.apply(null, b)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      LS.set('dev', id);
+    }
+    return id;
+  }
+  function showLeft(n) {
+    var el = $('ask-left');
+    if (!el) return;
+    askLeft = n;
+    var form = $('ask-form'), out = n === 0;
+    if (form) { $('ask-q').disabled = out; form.querySelector('button').disabled = out; }
+    el.className = 'ask-left' + (n != null && n <= 3 ? ' low' : '');
+    el.setAttribute('role', n != null && n <= 3 ? 'alert' : 'status');
+    el.textContent = n == null ? '' : out ? t('ask_out', { max: askMax }) : n <= 3 ? t('ask_low', { n: n }) : t('ask_left', { n: n, max: askMax });
+  }
+  function refreshLeft() {
+    if (!CFG.api) return;
+    fetch(CFG.api.replace(/\/$/, '') + '/api/quota', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ dev: deviceId() }) })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { if (j && j.limit) askMax = j.limit; if (j && j.remaining != null) showLeft(j.remaining); })
+      .catch(function () { /* the counter is a convenience */ });
+  }
+  function refLink(type, id) {
+    if (type === 'q') {
+      var q = FAQ.filter(function (x) { return x.id === id; })[0];
+      return q ? '<a class="fq-pl" href="#faq=' + encodeURIComponent(id) + '"><span>' + esc(lo(q.q)) + '</span></a>' : '';
+    }
+    var p = BY[id];
+    return p ? '<a class="fq-pl" href="#p=' + encodeURIComponent(id) + '">' + pin(p.cat, 'xs') + '<span>' + esc(lo(p.n)) + '</span></a>' : '';
+  }
+  function answerHtml(text) {
+    var tagged = function (s) {
+      return esc(s).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+        .replace(/https:\/\/webgrs\.github\.io\/[a-z0-9\/-]+/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener">' + u.replace('https://', '') + '</a>'; })
+        .replace(/\[(p|q):([a-z0-9-]+)\]/g, function (m, ty, id) {
+        var l = refLink(ty, id);
+        return l ? '<span class="cite">' + l + '</span>' : '';
+      });
+    };
+    var out = '', list = [];
+    var flush = function () { if (list.length) { out += '<ul>' + list.map(function (x) { return '<li>' + tagged(x) + '</li>'; }).join('') + '</ul>'; list = []; } };
+    String(text).split(/\n+/).forEach(function (line) {
+      line = line.trim();
+      if (!line) return;
+      var m = /^(?:[-*•]|\d+[.)])\s+(.*)$/.exec(line);
+      if (m) list.push(m[1]); else { flush(); out += '<p>' + tagged(line.replace(/^#+\s*/, '')) + '</p>'; }
+    });
+    flush();
+    return out;
+  }
+  function ask(qtext) {
+    var q = String(qtext || '').trim(), box = $('ask-out');
+    if (q.length < 2 || !box) return;
+    var seq = ++askSeq;
+    if (!AIX) AIX = EssAsk.build(D);
+    var refs = EssAsk.retrieve(AIX, q, 6);
+    var rel = refs.map(function (r) { return refLink(r.type, r.id); }).join('');
+    box.innerHTML = (rel ? '<div class="ask-rel"><span class="fq-k">' + esc(t('ask_related')) + '</span>' + rel + '</div>' : '') +
+      '<div class="ask-ans" id="ask-ans"></div>';
+    var ans = $('ask-ans');
+    if (!refs.length) { ans.innerHTML = '<p class="ask-msg">' + esc(t('ask_none')) + '</p>'; return; }
+    if (!G) { ans.innerHTML = '<p class="ask-msg">' + esc(t('ask_off')) + '</p>'; return; }
+    if (askLeft === 0) { ans.innerHTML = '<p class="ask-msg">' + esc(t('ask_out', { max: askMax })) + '</p>'; return; }
+    ans.innerHTML = '<p class="ask-msg wait"><span class="spin" aria-hidden="true"></span>' + esc(t('ask_wait')) + '</p>';
+    var send = function () { return G.call('/api/ask', { method: 'POST', body: { q: q, lang: lang, dev: deviceId() } }); };
+    send().catch(function (e) {
+      // Only sessions that passed the human check may ask: run it once more, then retry
+      if (e && e.data && e.data.error === 'verify' && G.reverify) return G.reverify().then(send);
+      throw e;
+    }).then(function (r) {
+      if (seq !== askSeq) return;
+      if (r.status === 'queued') return;  // leave the spinner as it is
+      if (r.limit) askMax = r.limit;
+      if (r.remaining != null) showLeft(r.remaining);
+      if (!r.answer) { ans.innerHTML = '<p class="ask-msg">' + esc(t('ask_none')) + '</p>'; return; }
+      ans.innerHTML = '<div class="ask-k">' + esc(t('ask_ai')) + '</div>' + answerHtml(r.answer) +
+        (r.unsupported && r.unsupported.length ? '<p class="ask-warn">' + esc(t('ask_numcheck')) + '</p>' : '');
+    }).catch(function (e) {
+      if (seq !== askSeq) return;
+      if (e && e.data && e.data.error === 'device_limit') {
+        if (e.data.limit) askMax = e.data.limit;
+        showLeft(0);
+        ans.innerHTML = '<p class="ask-msg">' + esc(t('ask_out', { max: askMax })) + '</p>';
+        return;
+      }
+      var code = e && e.data && e.data.error;
+      ans.innerHTML = '<p class="ask-msg">' + esc(t(code === 'verify' ? 'ask_verify' : code === 'busy' ? 'ask_busy' : e && e.status === 429 ? 'ask_quota' : 'ask_fail')) + '</p>';
+    });
   }
   function showFaq(id) {
     if (!$('view-list').hidden) state.listScroll = $('scroller').scrollTop;
@@ -492,6 +630,7 @@
     setTab('faq');
     var d = id && $('q-' + id);
     if (d) { d.open = true; d.scrollIntoView(); } else $('view-faq').scrollTop = 0;
+    if (state.askQ) { $('ask-q').value = state.askQ; ask(state.askQ); state.askQ = ''; }
   }
   function showGuide() {
     $('view-faq').hidden = true;
@@ -610,6 +749,7 @@
     renderList();
   };
   $('list').addEventListener('click', function (e) {
+    if (e.target.closest('[data-ask]')) state.askQ = state.q.trim();
     var a = e.target.closest('.row');
     if (a) pageFromList = true;
   });

@@ -50,6 +50,14 @@
       return pending;
     }
 
+    // Drop an unverified session and run the human check again (for APIs that only serve verified sessions)
+    function reverify() {
+      if (tok && tok.human && tok.exp > Date.now() + 60000) return Promise.resolve(tok.token);
+      tok = null;
+      try { sessionStorage.removeItem(KEY); } catch (e) { /* storage blocked */ }
+      return session();
+    }
+
     // call('/api/x', {method, body}) -> parsed JSON; throws an Error with .status and .data on refusal
     async function call(path, o) {
       o = o || {};
@@ -69,7 +77,7 @@
       }
     }
 
-    return { call: call, session: session, human: function () { return tok ? tok.human : 0; } };
+    return { call: call, session: session, reverify: reverify, human: function () { return tok ? tok.human : 0; } };
   }
 
   window.WebgrsGuard = { create: create };
