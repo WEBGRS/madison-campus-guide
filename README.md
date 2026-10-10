@@ -1,6 +1,6 @@
 # Madison Campus Guide
 
-**Live site: https://webgrs.github.io/madison-campus-guide/**
+**Live site: https://guide.madisonstudents.com/**
 
 The everyday places around the UW–Madison campus, each explained in English and Chinese:
 what the place is, what you can do there, how to use it, what it costs and who may use it,
