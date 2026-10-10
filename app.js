@@ -780,7 +780,6 @@
     document.documentElement.setAttribute('data-theme', next);
     LS.set('theme', next);
   };
-  $('home-link').onclick = function (e) { e.preventDefault(); if (location.hash) location.hash = ''; };
   $('tab-map').onclick = function (e) { e.preventDefault(); if (location.hash) location.hash = ''; };
 
   // Owner debug table (?debug)
