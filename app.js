@@ -20,7 +20,7 @@
       search_ph: 'Search: pharmacy, Asian grocery, printing…', all: 'All', open_now: 'Open now',
       sort: 'Sort', sort_cat: 'By category', sort_dist: 'Nearest first', from: 'From',
       count: '{n} places', count1: '1 place', none: 'Nothing matches. Try another word or clear the filters.',
-      clear: 'Clear filters', map: 'Map', list: 'List', back: 'Back', details: 'Details',
+      clear: 'Clear filters', save: 'Save', saved: 'Saved', map: 'Map', list: 'List', back: 'Back', details: 'Details',
       open: 'Open', closed: 'Closed', open24: 'Open 24 hours', closes: 'closes {t}', opens: 'opens {t}',
       opens_tmr: 'opens tomorrow {t}', opens_day: 'opens {d} {t}',
       hours: 'Hours', address: 'Address', phone: 'Phone', website: 'Website', distance: 'Distance',
@@ -56,7 +56,7 @@
       search_ph: '搜索：药店、亚洲超市、打印……', all: '全部', open_now: '营业中',
       sort: '排序', sort_cat: '按分类', sort_dist: '由近到远', from: '距离从',
       count: '{n} 个地方', count1: '1 个地方', none: '没有符合的地方，换个词或清空筛选。',
-      clear: '清空筛选', map: '地图', list: '列表', back: '返回', details: '详情',
+      clear: '清空筛选', save: '收藏', saved: '已收藏', map: '地图', list: '列表', back: '返回', details: '详情',
       open: '营业中', closed: '已关门', open24: '24 小时开放', closes: '{t} 关门', opens: '{t} 开门',
       opens_tmr: '明天 {t} 开门', opens_day: '{d} {t} 开门',
       hours: '开放时间', address: '地址', phone: '电话', website: '官网', distance: '距离',
@@ -137,6 +137,29 @@
   };
   if (!ORIGINS.some(function (o) { return o.k === state.from; }) || state.from === 'me') state.from = 'campus';
 
+  // Saved places (ids kept even if a place is gone)
+  var saved = [];
+  try { var sv = JSON.parse(LS.get('saved', '[]')); if (Array.isArray(sv)) saved = sv.filter(function (x) { return typeof x === 'string'; }); } catch (e) { /* bad data */ }
+  state.savedOnly = false;
+  var sync = null;
+  function isSaved(id) { return saved.indexOf(id) >= 0; }
+  function saveBtn(id, cls) {
+    var on = isSaved(id), l = t(on ? 'saved' : 'save');
+    return '<button type="button" class="save' + (cls ? ' ' + cls : '') + '" data-save="' + esc(id) + '" aria-pressed="' + on + '" aria-label="' + esc(l) + '" title="' + esc(l) + '">' + (on ? '★' : '☆') + '</button>';
+  }
+  function toggleSave(id) {
+    var i = saved.indexOf(id);
+    if (i >= 0) saved.splice(i, 1); else saved.push(id);
+    LS.set('saved', JSON.stringify(saved));
+    if (sync) sync.changed();
+    if (state.savedOnly) renderList();
+    else Array.prototype.forEach.call(document.querySelectorAll('[data-save]'), function (b) {
+      if (b.getAttribute('data-save') !== id) return;
+      var on = isSaved(id), l = t(on ? 'saved' : 'save');
+      b.setAttribute('aria-pressed', String(on)); b.setAttribute('aria-label', l); b.title = l; b.textContent = on ? '★' : '☆';
+    });
+  }
+
   function dist(p) {
     if (p.lat == null) return null;
     var o = origin();
@@ -188,6 +211,7 @@
     if (!ps) qHits = [];
     D.places.forEach(function (p) {
       if (state.cat !== 'all' && p.cat !== state.cat) return;
+      if (state.savedOnly && !isSaved(p.id)) return;
       var sc = 1;
       if (ps) {
         var ms = C.matchScore(p, state.q, '');  // no category labels: "寄件" in a category name matched every bank
@@ -223,6 +247,8 @@
     $('q').placeholder = t('search_ph');
     $('f-open').textContent = t('open_now');
     $('f-open').setAttribute('aria-pressed', String(state.open));
+    $('f-saved').textContent = '★ ' + t('saved');
+    $('f-saved').setAttribute('aria-pressed', String(state.savedOnly));
     $('l-sort').textContent = t('sort');
     $('l-from').textContent = t('from');
     $('f-sort').innerHTML = [['cat', t('sort_cat')], ['dist', t('sort_dist')]].map(function (o) {
@@ -240,7 +266,7 @@
     var st = statusText(r.st);
     if (st) meta.push(st);
     return '<li><a class="row" href="#p=' + encodeURIComponent(p.id) + '" data-id="' + esc(p.id) + '">' + pin(p.cat) +
-      '<span class="rtext"><span class="rname">' + esc(lo(p.n)) + alt + '</span><span class="rmeta">' + meta.join(' · ') + '</span></span></a></li>';
+      '<span class="rtext"><span class="rname">' + esc(lo(p.n)) + alt + '</span><span class="rmeta">' + meta.join(' · ') + '</span></span></a>' + saveBtn(p.id) + '</li>';
   }
   var lastVisible = [];
   function renderList() {
@@ -272,7 +298,7 @@
     $('list').innerHTML = html;
     $('count').textContent = rows.length === 1 ? t('count1') : t('count', { n: rows.length });
     var clr = $('clear');
-    if (clr) clr.onclick = function () { state.q = ''; $('q').value = ''; state.cat = 'all'; state.open = false; LS.set('cat', 'all'); renderAll(true); };
+    if (clr) clr.onclick = function () { state.q = ''; $('q').value = ''; state.cat = 'all'; state.open = false; state.savedOnly = false; LS.set('cat', 'all'); renderAll(true); };
     syncMarkers(rows);
   }
 
@@ -417,7 +443,7 @@
     }).join('');
 
     $('page').innerHTML =
-      '<div class="pg-top"><a class="back" href="#" id="back">← ' + esc(t('back')) + '</a></div>' +
+      '<div class="pg-top"><a class="back" href="#" id="back">← ' + esc(t('back')) + '</a>' + saveBtn(p.id, 'big') + '</div>' +
       '<header class="pg-head"><a class="pg-cat" href="#" data-gocat="' + p.cat + '">' + pin(p.cat, 'sm') + '<span>' + esc(catName(p.cat)) + '</span></a>' +
       '<h1>' + esc(lo(p.n)) + '</h1>' + (alt && alt !== lo(p.n) ? '<div class="pg-alt">' + esc(alt) + '</div>' : '') +
       '<div class="pg-kind">' + esc(lo(p.kind)) + '</div><p class="pg-sum">' + esc(lo(p.sum)) + '</p></header>' +
@@ -725,6 +751,13 @@
     qTimer = setTimeout(function () { state.q = $('q').value; renderList(); if (state.q.trim()) fitVisible(); }, 120);
   });
   $('f-open').onclick = function () { state.open = !state.open; renderFilters(); renderList(); };
+  $('f-saved').onclick = function () { state.savedOnly = !state.savedOnly; renderFilters(); renderList(); fitVisible(); };
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-save]');
+    if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    toggleSave(b.getAttribute('data-save'));
+  });
   $('f-sort').onchange = function () { state.sort = this.value; LS.set('sort', state.sort); renderList(); };
   $('f-from').onchange = function () {
     var v = this.value;
@@ -746,6 +779,7 @@
     }
     state.from = v;
     LS.set('from', v);
+    if (sync) sync.changed();
     renderList();
   };
   $('list').addEventListener('click', function (e) {
@@ -793,6 +827,24 @@
     $('debug').hidden = false;
     $('dbg-x').onclick = function () { $('debug').hidden = true; };
   }
+
+  // Account sync
+  if (window.MSSync) sync = window.MSSync('guide', {
+    get: function () { return { saved: saved.slice(), from: state.from === 'me' ? 'campus' : state.from }; },
+    set: function (d) {
+      saved = d && Array.isArray(d.saved) ? d.saved.filter(function (x) { return typeof x === 'string'; }) : [];
+      LS.set('saved', JSON.stringify(saved));
+      var f = d ? d.from : 'campus';
+      if (f !== 'me' && ORIGINS.some(function (o) { return o.k === f; })) { state.from = f; LS.set('from', f); }
+      renderAll(false);
+    },
+    merge: function (l, s) {
+      var u = ((s && s.saved) || []).slice();
+      ((l && l.saved) || []).forEach(function (x) { if (u.indexOf(x) < 0) u.push(x); });
+      return { saved: u, from: l && l.from && l.from !== 'campus' ? l.from : (s && s.from) || 'campus' };
+    },
+    empty: function (d) { return !(d && d.saved && d.saved.length) && (!d || !d.from || d.from === 'campus'); }
+  });
 
   initMap();
   renderAll(false);

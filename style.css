@@ -76,6 +76,12 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
 .list { list-style: none; margin: 0; padding: 0 0 8px; }
 .ghead { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 12px 16px 6px; background: var(--paper); font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--line); }
 .row { display: flex; gap: 12px; align-items: flex-start; padding: 11px 16px; text-decoration: none; border-bottom: 1px solid var(--line); }
+.list li { position: relative; }
+.list li:has(.save) .row { padding-right: 52px; }
+.save { border: 0; background: none; color: var(--ink); font-size: 20px; line-height: 1; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; padding: 0; }
+.list .save { position: absolute; right: 10px; top: 8px; }
+.save:hover { background: var(--smoke); }
+.save.big { border: 1px solid var(--line); width: 34px; height: 34px; }
 .row:hover { background: var(--smoke); }
 .row.sel { background: var(--smoke); box-shadow: inset 3px 0 0 var(--ink); }
 .row .pin { margin-top: 1px; }
@@ -116,7 +122,7 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
 /* Place page */
 .page-view { overflow-y: auto; display: block; }
 .page { max-width: 1120px; margin: 0 auto; padding: 18px 28px 64px; }
-.pg-top { margin-bottom: 12px; }
+.pg-top { margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .back { display: inline-block; text-decoration: none; font-weight: 600; padding: 4px 12px 4px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; }
 .back:hover { border-color: var(--ink); }
 .pg-head { max-width: 720px; margin-bottom: 26px; }
