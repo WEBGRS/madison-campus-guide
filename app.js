@@ -17,7 +17,7 @@
 
   var T = {
     en: {
-      search_ph: 'Search: pharmacy, Asian grocery, printing…', all: 'All', open_now: 'Open now',
+      search_ph: 'Search places', all: 'All', open_now: 'Open now',
       sort: 'Sort', sort_cat: 'By category', sort_dist: 'Nearest first', from: 'From',
       count: '{n} places', count1: '1 place', none: 'Nothing matches. Try another word or clear the filters.',
       clear: 'Clear filters', save: 'Save', saved: 'Saved', map: 'Map', list: 'List', back: 'Back', details: 'Details',
@@ -37,7 +37,7 @@
       tab_map: 'Map', tab_guide: 'Full guide', jump: 'Jump to a section', map_page: 'Map and bus stops',
       no_stops: 'No Madison Metro stop within 1.5 km (about a mile).',
       tab_faq: 'Ask', related_q: 'Common questions about this place', faq_places: 'Where to go', faq_hit: 'Related common questions',
-      ask_title: 'Ask a question', ask_ph: 'e.g. Can I open a bank account without an SSN?', ask_btn: 'Ask', faq_list: 'Common questions',
+      ask_title: 'Ask a question', ask_ph: 'Type your question', ask_btn: 'Ask', faq_list: 'Common questions',
       ask_note: 'AI answers only from this guide\'s checked entries and can be wrong; follow the linked official pages. Questions are logged to improve the guide.',
       ask_related: 'Related in this guide', ask_wait: 'Writing an answer…', ask_ai: 'AI answer',
       ask_none: 'This guide has nothing on that yet. Try other words, or browse the common questions below.',
@@ -53,7 +53,7 @@
       ask_out: 'This device has used today\'s {max} questions. They come back after midnight, Madison time. The related entries above still work.'
     },
     zh: {
-      search_ph: '搜索：药店、亚洲超市、打印……', all: '全部', open_now: '营业中',
+      search_ph: '搜索地点', all: '全部', open_now: '营业中',
       sort: '排序', sort_cat: '按分类', sort_dist: '由近到远', from: '距离从',
       count: '{n} 个地方', count1: '1 个地方', none: '没有符合的地方，换个词或清空筛选。',
       clear: '清空筛选', save: '收藏', saved: '已收藏', map: '地图', list: '列表', back: '返回', details: '详情',
@@ -73,7 +73,7 @@
       tab_map: '地图', tab_guide: '指南全文', jump: '跳到某一类', map_page: '地图和公交站',
       no_stops: '1.5 公里内没有 Madison Metro 公交站。',
       tab_faq: '问答', related_q: '和这里有关的常见问题', faq_places: '去这些地方', faq_hit: '相关常见问题',
-      ask_title: '问一个问题', ask_ph: '比如：没有 SSN 能开银行账户吗？', ask_btn: '提问', faq_list: '常见问题',
+      ask_title: '问一个问题', ask_ph: '输入你的问题', ask_btn: '提问', faq_list: '常见问题',
       ask_note: 'AI 只根据本站核过的资料回答，可能出错，以链接的官网为准。提问会被记录，用来补充本站内容。',
       ask_related: '本站相关内容', ask_wait: '正在整理回答……', ask_ai: 'AI 回答',
       ask_none: '本站暂时没有相关资料。换个说法试试，或看下面的常见问题。',
@@ -259,7 +259,8 @@
     }).join('');
   }
   function rowHtml(r) {
-    var p = r.p, alt = lang === 'zh' && p.n.en !== p.n.zh ? '<span class="alt">' + esc(p.n.en) + '</span>' : '';
+    // English name under the Chinese one, unless the Chinese name already contains it
+    var p = r.p, alt = lang === 'zh' && p.n.zh && p.n.zh.indexOf(p.n.en) < 0 ? '<span class="alt">' + esc(p.n.en) + '</span>' : '';
     var meta = [esc(lo(p.kind))];
     var d = distShort(r.mi);
     if (d) meta.push(esc(d));
