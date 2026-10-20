@@ -28,7 +28,7 @@ time), address and directions, phone, website, distance from campus, and the nea
 Madison Metro stops. The **Full guide** tab puts every place on one page with a table of
 contents.
 
-The **Questions** tab answers 39 things students ask most often — getting from O'Hare to
+The **Questions** tab answers 46 things students ask most often — getting from O'Hare to
 Madison, the bus pass, a US phone number, where to print, opening a bank account without an
 SSN, what to do about a scam call — and links each answer to the places that solve it. The
 questions were chosen by counting what students actually ask in Madison chat groups and on
@@ -39,9 +39,9 @@ r/UWMadison and r/madisonwi; only the topics were used, never anyone's messages.
 ## How the facts were checked
 
 Every address, phone number, opening time, price and eligibility rule in an entry is tied
-to a verbatim quote from the page it came from — 4,449 quotes in total, each matched
+to a verbatim quote from the page it came from — 4,510 quotes in total, each matched
 again against a saved copy of its source before publishing. Each place lists its sources
-and the date it was checked (last check: 2026-10-08). Hours and rules change, so confirm on
+and the date it was checked (last check: 2026-10-19). Hours and rules change, so confirm on
 the official site before you go.
 
 Coordinates come from OpenStreetMap and were cross-checked with the US Census geocoder.

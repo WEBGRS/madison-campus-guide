@@ -54,7 +54,7 @@
     [/图书馆|自习|library|study/i, 'library study 图书馆 自习'],
     [/打工|兼职|找工作|校内工作|\bjob|employment/i, 'job employment 工作 打工'],
     [/报税|退税|\btax/i, 'tax 报税'],
-    [/ssn|社安|安全号/i, 'ssn social security 社安号'],
+    [/ssn|社安|安全号|税号/i, 'ssn social security 社安号'],
     [/学费|tuition|bursar/i, 'tuition bursar 学费'],
     [/保险|\bSHIP\b|insurance/, 'insurance ship 保险'],
     [/心理|压力|焦虑|抑郁|mental|counsel|stress|anxiety/i, 'mental health counseling 心理'],
