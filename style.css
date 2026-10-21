@@ -288,6 +288,13 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
   .g-jump { display: block; width: 100%; max-width: none; margin: 10px 0 0; font-size: 15px; padding: 8px 30px 8px 12px; }
   .g-cat-h { font-size: 22px; }
   .g-place h3 { font-size: 19px; }
+  /* The filters scroll away with the list; one row of filter chips */
+  .rail { overflow-y: auto; overscroll-behavior: contain; }
+  .scroller { flex: none; min-height: auto; overflow: visible; }
+  .frow { flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 0 16px 2px; scrollbar-width: none; }
+  .frow::-webkit-scrollbar { display: none; }
+  .frow > * { flex: none; }
+  .count, .rname .alt, .rmeta .mi { display: none; }
   /* No Star / Feedback pill and no Back link: the system back gesture and the Map tab do that */
   :root { --wgfb-display: none; }
   .pg-top .back { display: none; }

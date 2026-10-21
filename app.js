@@ -166,11 +166,8 @@
     return C.miles({ lat: o.lat, lng: o.lng }, p);
   }
   function fmtMi(mi) { return mi < 0.1 ? '0.1' : mi < 10 ? mi.toFixed(1) : String(Math.round(mi)); }
-  function distShort(mi) {
-    if (mi == null) return '';
-    var m = C.walkMinutes(mi);
-    return m <= 30 ? t('mi', { mi: fmtMi(mi) }) + ' · ' + t('walk_short', { m: m }) : t('mi', { mi: fmtMi(mi) });
-  }
+  // The list scrolls inside #scroller; on phones the whole rail scrolls so the filters go away
+  function listBox() { return matchMedia('(max-width: 760px)').matches ? $('rail') : $('scroller'); }
 
   // Time formatting
   function fmtT(min) {
@@ -262,8 +259,10 @@
     // English name under the Chinese one, unless the Chinese name already contains it
     var p = r.p, alt = lang === 'zh' && p.n.zh && p.n.zh.indexOf(p.n.en) < 0 ? '<span class="alt">' + esc(p.n.en) + '</span>' : '';
     var meta = [esc(lo(p.kind))];
-    var d = distShort(r.mi);
-    if (d) meta.push(esc(d));
+    if (r.mi != null) {  // miles hide on phones when the walk time is there
+      var wm = C.walkMinutes(r.mi);
+      meta.push(wm <= 30 ? '<span class="mi">' + esc(t('mi', { mi: fmtMi(r.mi) })) + ' · </span>' + esc(t('walk_short', { m: wm })) : esc(t('mi', { mi: fmtMi(r.mi) })));
+    }
     var st = statusText(r.st);
     if (st) meta.push(st);
     return '<li><a class="row" href="#p=' + encodeURIComponent(p.id) + '" data-id="' + esc(p.id) + '">' + pin(p.cat) +
@@ -647,7 +646,7 @@
     });
   }
   function showFaq(id) {
-    if (!$('view-list').hidden) state.listScroll = $('scroller').scrollTop;
+    if (!$('view-list').hidden) state.listScroll = listBox().scrollTop;
     $('view-list').hidden = true;
     $('view-page').hidden = true;
     $('view-guide').hidden = true;
@@ -661,7 +660,7 @@
   }
   function showGuide() {
     $('view-faq').hidden = true;
-    if (!$('view-list').hidden) state.listScroll = $('scroller').scrollTop;
+    if (!$('view-list').hidden) state.listScroll = listBox().scrollTop;
     $('view-list').hidden = true;
     $('view-page').hidden = true;
     $('view-guide').hidden = false;
@@ -681,7 +680,7 @@
   // Views and routing
   var pageFromList = false;
   function showPage(id) {
-    if (!$('view-list').hidden) state.listScroll = $('scroller').scrollTop;
+    if (!$('view-list').hidden) state.listScroll = listBox().scrollTop;
     $('view-list').hidden = true;
     $('view-guide').hidden = true;
     $('view-faq').hidden = true;
@@ -700,7 +699,7 @@
     document.title = 'Madison Essentials';
     if (miniMap) { miniMap.remove(); miniMap = null; }
     if (map) setTimeout(function () { map.invalidateSize(); }, 0);
-    $('scroller').scrollTop = state.listScroll || 0;
+    listBox().scrollTop = state.listScroll || 0;
   }
   function goBack(refit) {
     if (pageFromList && !refit) { history.back(); return; }
