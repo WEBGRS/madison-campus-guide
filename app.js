@@ -806,13 +806,22 @@
     var a = e.target.closest && e.target.closest('.pop-go');
     if (a) pageFromList = true;
   });
-  $('switcher').onclick = function () {
-    state.mapMode = !state.mapMode;
-    document.body.classList.toggle('map-mode', state.mapMode);
-    $('switcher').textContent = state.mapMode ? t('list') : t('map');
-    if (state.mapMode) topBack();
+  function setMapMode(on) {
+    state.mapMode = on;
+    document.body.classList.toggle('map-mode', on);
+    $('switcher').textContent = on ? t('list') : t('map');
+    if (on) topBack();
     if (map) setTimeout(function () { map.invalidateSize(); fitVisible(); }, 0);
+  }
+  // The phone's map/list switch is a history step, so Back returns to the list instead of leaving the site
+  $('switcher').onclick = function () {
+    setMapMode(!state.mapMode);
+    try { history.pushState({ map: state.mapMode }, '', location.href); } catch (e) { /* file url */ }
   };
+  window.addEventListener('popstate', function (e) {
+    var on = !!(e.state && e.state.map);  // #p= / #faq / #guide steps are list steps
+    if (on !== state.mapMode) setMapMode(on);
+  });
   $('lang').onclick = function () { lang = lang === 'zh' ? 'en' : 'zh'; LS.set('lang', lang); renderAll(false); if (state.sel) select(state.sel, true); };
   $('theme').onclick = function () {
     var cur = document.documentElement.getAttribute('data-theme');
@@ -856,6 +865,7 @@
   initMap();
   renderAll(false);
   route();
+  try { history.replaceState({ map: state.mapMode }, '', location.href); } catch (e) { /* file url */ }
   if ($('debug') && /[?&]debug\b/.test(location.search)) renderDebug();
   window.ESSAPP = { state: state, select: select, visible: visible };
 })();
