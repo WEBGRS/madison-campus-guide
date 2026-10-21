@@ -716,7 +716,13 @@
     showList();
     pageFromList = false;
   }
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', function () { route(); topBack(); });
+  // Phone top bar slides away while scrolling; a new view or the map always gets it back (and the map its new size)
+  function topBack() {
+    if (!window.NavHide || !document.documentElement.classList.contains('nav-hidden')) return;
+    NavHide.show();
+    if (map) setTimeout(function () { map.invalidateSize(); }, 260);
+  }
 
   function renderAll(refit) {
     document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
@@ -805,6 +811,7 @@
     state.mapMode = !state.mapMode;
     document.body.classList.toggle('map-mode', state.mapMode);
     $('switcher').textContent = state.mapMode ? t('list') : t('map');
+    if (state.mapMode) topBack();
     if (map) setTimeout(function () { map.invalidateSize(); fitVisible(); }, 0);
   };
   $('lang').onclick = function () { lang = lang === 'zh' ? 'en' : 'zh'; LS.set('lang', lang); renderAll(false); if (state.sel) select(state.sel, true); };
