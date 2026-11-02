@@ -39,7 +39,7 @@ r/UWMadison and r/madisonwi; only the topics were used, never anyone's messages.
 ## How the facts were checked
 
 Every address, phone number, opening time, price and eligibility rule in an entry is tied
-to a verbatim quote from the page it came from — 4,510 quotes in total, each matched
+to a verbatim quote from the page it came from — 4,515 quotes in total, each matched
 again against a saved copy of its source before publishing. Each place lists its sources
 and the date it was checked (last check: 2026-10-19). Hours and rules change, so confirm on
 the official site before you go.
