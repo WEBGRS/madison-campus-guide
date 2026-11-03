@@ -303,13 +303,23 @@
   }
 
   // Map
-  var map = null, markers = {}, tileLayer = null;
+  var map = null, markers = {}, tileLayer = null, pins = null;
   function tileUrl() { return 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'; }
   function initMap() {
     if (!window.L || map) return;
     map = L.map('map', { zoomControl: true, attributionControl: false }).setView([C.CAMPUS.lat - 0.002, C.CAMPUS.lng - 0.004], 14);
     L.control.attribution({ position: 'bottomleft' }).addTo(map); // bottom right belongs to the feedback pill
     tileLayer = L.tileLayer(tileUrl(), { maxZoom: 19, maxNativeZoom: 19, attribution: 'Tiles &copy; Esri' }).addTo(map);
+    // Pins that crowd together (Library Mall, State Street) merge into one numbered bubble until zoomed in
+    pins = L.markerClusterGroup ? L.markerClusterGroup({
+      maxClusterRadius: 36, disableClusteringAtZoom: 18, showCoverageOnHover: false, spiderfyOnMaxZoom: true,
+      iconCreateFunction: function (c) {
+        var n = c.getChildCount();
+        return L.divIcon({ className: 'clu-wrap', html: '<span class="clu' + (n >= 10 ? ' big' : '') + '">' + n + '</span>', iconSize: [36, 36], iconAnchor: [18, 18] });
+      }
+    }) : L.layerGroup();
+    pins.addTo(map);
+    map.on('zoomend', function () { var mk = markers[state.sel], el = mk && mk.getElement(); if (el) el.classList.add('sel'); });
     D.places.forEach(function (p) {
       if (p.lat == null) return;
       var m = L.marker([p.lat, p.lng], {
@@ -324,11 +334,14 @@
     if (!map) return;
     var show = {};
     rows.forEach(function (r) { show[r.p.id] = 1; });
+    var add = [], drop = [];
     Object.keys(markers).forEach(function (id) {
       var m = markers[id], on = !!show[id];
-      if (on && !map.hasLayer(m)) m.addTo(map);
-      if (!on && map.hasLayer(m)) m.remove();
+      if (on && !pins.hasLayer(m)) add.push(m);
+      if (!on && pins.hasLayer(m)) drop.push(m);
     });
+    if (pins.removeLayers) { pins.removeLayers(drop); pins.addLayers(add); }
+    else { drop.forEach(function (m) { pins.removeLayer(m); }); add.forEach(function (m) { pins.addLayer(m); }); }
   }
   function fitVisible() {
     if (!map) return;
@@ -350,8 +363,12 @@
       if (el) el.classList.toggle('sel', k === id);
     });
     if (map && markers[id]) {
-      markers[id].bindPopup(popupHtml(p), { maxWidth: 280, autoPanPadding: [30, 30] }).openPopup();
-      if (!fromMap) map.panTo([p.lat, p.lng]);
+      var mk = markers[id];
+      mk.bindPopup(popupHtml(p), { maxWidth: 280, autoPanPadding: [30, 30] });
+      var mark = function () { var el = mk.getElement(); if (el) el.classList.add('sel'); };
+      // A pin inside a bubble: zoom until it shows, then open it
+      if (pins && pins.zoomToShowLayer && pins.hasLayer(mk) && !mk.getElement()) pins.zoomToShowLayer(mk, function () { mk.openPopup(); mark(); });
+      else { mk.openPopup(); if (!fromMap) map.panTo([p.lat, p.lng]); }
     }
     var row = document.querySelector('.row[data-id="' + id + '"]');
     document.querySelectorAll('.row.sel').forEach(function (r) { r.classList.remove('sel'); });
@@ -740,6 +757,20 @@
     if (!$('view-guide').hidden) renderGuide();
     if (!$('view-faq').hidden) renderFaq();
   }
+
+  // Sideways chip rows: mark which edge still has more, for the fade
+  function edgeFade(el) {
+    var max = el.scrollWidth - el.clientWidth, l = el.scrollLeft > 2, r = el.scrollLeft < max - 2;
+    el.setAttribute('data-fade', max > 2 ? (l ? 'l' : '') + (r ? 'r' : '') : '');
+  }
+  [$('cats'), document.querySelector('.filters .frow')].forEach(function (el) {
+    if (!el) return;
+    el.addEventListener('scroll', function () { edgeFade(el); }, { passive: true });
+    window.addEventListener('resize', function () { edgeFade(el); });
+    if (window.ResizeObserver) new ResizeObserver(function () { edgeFade(el); }).observe(el);
+    new MutationObserver(function () { edgeFade(el); }).observe(el, { childList: true, subtree: true, characterData: true });
+    edgeFade(el);
+  });
 
   // Events
   $('cats').addEventListener('click', function (e) {

@@ -118,6 +118,12 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
 }
 :root[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.9) contrast(.9); }
 .switcher { display: none; }
+/* Cluster bubbles: a count in a white disc with an ink ring, like the pins */
+.clu-wrap { background: none; border: 0; }
+.clu { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--paper); color: var(--ink); border: 2px solid var(--ink);
+  font-size: 13.5px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 2px var(--paper), 0 1px 4px rgba(0, 0, 0, .35); transition: transform .12s ease; }
+.clu.big { width: 36px; height: 36px; border-width: 3px; }
+.clu-wrap:hover .clu { transform: scale(1.1); }
 
 /* Place page */
 .page-view { overflow-y: auto; display: block; }
@@ -314,6 +320,12 @@ select { padding: 5px 26px 5px 10px; border: 1px solid var(--line); border-radiu
   .wordmark { font-size: 0; }
   .wordmark::before { content: "E"; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%;
     background: var(--ink); color: var(--paper); font-size: 17px; font-weight: 800; letter-spacing: 0; }
+}
+/* Phones: sideways rows fade at the edge that has more to scroll to */
+@media (max-width: 760px) {
+  .cats[data-fade="r"], .frow[data-fade="r"] { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
+  .cats[data-fade="l"], .frow[data-fade="l"] { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
+  .cats[data-fade="lr"], .frow[data-fade="lr"] { -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); }
 }
 @media print {
   body { display: block; overflow: visible; height: auto; }
